@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>contactEmailRot13</key>
+	<string>tvguho.pbz@zrlre.sz</string>
+	<key>contactName</key>
+	<string>Mike Meyer</string>
+	<key>description</key>
+	<string>Run ESLint on your current document, all from the comfort of your... TextMate. Wow, neat!</string>
+	<key>name</key>
+	<string>ESLint</string>
+	<key>uuid</key>
+	<string>BCEC723B-3E07-4010-897D-270DCDFCEBF1</string>
+</dict>
+</plist>

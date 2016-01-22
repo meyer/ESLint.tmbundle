@@ -1,0 +1,107 @@
+[
+    {
+        "filePath": "/path/to/js/file/test-errors.js",
+        "messages": [
+            {
+                "ruleId": "no-unused-vars",
+                "severity": 2,
+                "message": "\"addOne\" is defined but never used",
+                "line": 1,
+                "column": 10,
+                "nodeType": "Identifier",
+                "source": "function addOne(i) {"
+            },
+            {
+                "ruleId": "indent",
+                "severity": 2,
+                "message": "Expected indentation of 2 space characters but found 4.",
+                "line": 2,
+                "column": 5,
+                "nodeType": "IfStatement",
+                "source": "    if (i != NaN) {",
+                "fix": {
+                    "range": [
+                        23,
+                        25
+                    ],
+                    "text": ""
+                }
+            },
+            {
+                "ruleId": "use-isnan",
+                "severity": 2,
+                "message": "Use the isNaN function to compare with NaN.",
+                "line": 2,
+                "column": 9,
+                "nodeType": "BinaryExpression",
+                "source": "    if (i != NaN) {"
+            },
+            {
+                "ruleId": "indent",
+                "severity": 2,
+                "message": "Expected indentation of 6 space characters but found 8.",
+                "line": 3,
+                "column": 9,
+                "nodeType": "ReturnStatement",
+                "source": "        return i ++",
+                "fix": {
+                    "range": [
+                        47,
+                        49
+                    ],
+                    "text": ""
+                }
+            },
+            {
+                "ruleId": "semi",
+                "severity": 2,
+                "message": "Missing semicolon.",
+                "line": 3,
+                "column": 20,
+                "nodeType": "ReturnStatement",
+                "source": "        return i ++",
+                "fix": {
+                    "range": [
+                        60,
+                        60
+                    ],
+                    "text": ";"
+                }
+            },
+            {
+                "ruleId": "semi",
+                "severity": 2,
+                "message": "Missing semicolon.",
+                "line": 5,
+                "column": 13,
+                "nodeType": "ReturnStatement",
+                "source": "      return",
+                "fix": {
+                    "range": [
+                        86,
+                        86
+                    ],
+                    "text": ";"
+                }
+            },
+            {
+                "ruleId": "no-extra-semi",
+                "severity": 2,
+                "message": "Unnecessary semicolon.",
+                "line": 7,
+                "column": 2,
+                "nodeType": "EmptyStatement",
+                "source": "};",
+                "fix": {
+                    "range": [
+                        94,
+                        95
+                    ],
+                    "text": ""
+                }
+            }
+        ],
+        "errorCount": 7,
+        "warningCount": 0
+    }
+]
