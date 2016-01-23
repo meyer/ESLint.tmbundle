@@ -43,11 +43,16 @@ YES_LINT = [
 def validate
   eslint = ENV['TM_ESLINT'] || 'eslint'
 
+  # Change to file directory so ESLint looks for the local .eslintrc
+  Dir.chdir File.dirname(ENV['TM_FILEPATH'])
+
   args = [
     '-f',
     'json',
     '--no-color',
-    ENV['TM_FILEPATH']
+    '--stdin',
+    '--stdin-filename',
+    File.basename(ENV['TM_FILEPATH']),
   ]
 
   ENV['PATH'] = ENV['PATH'].split(':').unshift('/usr/local/bin', '/usr/bin', '/bin').uniq.join(':')
@@ -59,6 +64,9 @@ def validate
 
   # Run eslint, get output
   Open3.popen3(eslint, *args) do |i,o,e,t|
+    i.puts ARGF.read
+    i.close_write
+
     exit_status = Integer(t.value.exitstatus)
     results = begin JSON.parse(o.read) rescue nil end
 

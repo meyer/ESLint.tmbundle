@@ -9,7 +9,7 @@
 require "#{ENV['TM_BUNDLE_SUPPORT']}/run-eslint.rb"
 validate()</string>
 	<key>input</key>
-	<string>none</string>
+	<string>document</string>
 	<key>inputFormat</key>
 	<string>text</string>
 	<key>keyEquivalent</key>
@@ -24,6 +24,8 @@ validate()</string>
 	<string>toolTip</string>
 	<key>scope</key>
 	<string>source.js</string>
+	<key>semanticClass</key>
+	<string>callback.document.did-save</string>
 	<key>uuid</key>
 	<string>E5EFB295-D47A-4655-A109-7188849DD1FD</string>
 	<key>version</key>
