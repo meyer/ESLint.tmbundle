@@ -23,7 +23,7 @@ validate()</string>
 	<key>outputLocation</key>
 	<string>toolTip</string>
 	<key>scope</key>
-	<string>source.js</string>
+	<string>source.js - embedded</string>
 	<key>semanticClass</key>
 	<string>callback.document.did-save</string>
 	<key>uuid</key>
