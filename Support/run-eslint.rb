@@ -90,9 +90,19 @@ def validate
       s = msg_count == 1 ? '' : 's'
 
       puts "#{msg_count} lint message#{s}! #{YES_LINT}"
+
       lint['messages'].each do |msg|
-        (msg['severity'] === 2 ? error_lines : warning_lines) << "#{msg['line']}:#{msg['column']}"
-        puts "Line #{msg['line']}, column #{msg['column']}: #{msg['message']}"
+        print "Line #{msg['line']}, column #{msg['column']}: "
+
+        if msg['severity'] === 2
+          print 'Error! '
+          error_lines << "#{msg['line']}:#{msg['column']}"
+        else
+          print 'Warning! '
+          warning_lines << "#{msg['line']}:#{msg['column']}"
+        end
+
+        puts msg['message']
       end
 
       reset_marks(error_lines, 'error')
