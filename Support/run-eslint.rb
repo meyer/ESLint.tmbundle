@@ -81,6 +81,7 @@ def validate
     if result['messages'].length === 0
       puts NO_LINT
       reset_marks([], 'error')
+      reset_marks([], 'warning')
       exit 206
     end
 
