@@ -76,40 +76,41 @@ def validate
       exit 206
     end
 
-    if exit_status === 0
+    result = results.first
+
+    if result['messages'].length === 0
       puts NO_LINT
       reset_marks([], 'error')
       exit 206
     end
 
-    results.each do |lint|
-      error_lines = []
-      warning_lines = []
+    error_lines = []
+    warning_lines = []
+    msg_count = result['messages'].length
+    s = msg_count == 1 ? '' : 's'
 
-      msg_count = lint['messages'].length
-      s = msg_count == 1 ? '' : 's'
+    puts "#{msg_count} lint message#{s}! #{YES_LINT}"
 
-      puts "#{msg_count} lint message#{s}! #{YES_LINT}"
-
-      lint['messages'].each do |msg|
+    result['messages'].each do |msg|
+      if msg['line'] && msg['column']
         print "Line #{msg['line']}, column #{msg['column']}: "
-
-        if msg['severity'] === 2
-          print 'Error! '
-          error_lines << "#{msg['line']}:#{msg['column']}"
-        else
-          print 'Warning! '
-          warning_lines << "#{msg['line']}:#{msg['column']}"
-        end
-
-        puts msg['message']
       end
 
-      reset_marks(error_lines, 'error')
-      reset_marks(warning_lines, 'warning')
+      if msg['severity'] === 2
+        print 'Error! '
+        error_lines << "#{msg['line']}:#{msg['column']}"
+      else
+        print 'Warning! '
+        warning_lines << "#{msg['line']}:#{msg['column']}"
+      end
 
-      exit 206
+      puts msg['message']
     end
+
+    reset_marks(error_lines, 'error')
+    reset_marks(warning_lines, 'warning')
+
+    exit 206
 
   end
 end
