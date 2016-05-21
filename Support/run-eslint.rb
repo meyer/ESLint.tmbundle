@@ -1,6 +1,7 @@
 require 'shellwords'
 require 'open3'
 require 'json'
+require 'timeout'
 
 # Exit codes from ~/Library/Application Support/TextMate/Managed/Bundles/Bundle Support.tmbundle/Support/shared/lib/bash_init.sh
 # 200: discard
@@ -50,8 +51,8 @@ def validate
     '-f',
     'json',
     '--no-color',
-    '--stdin',
-    '--stdin-filename',
+    # '--stdin',
+    # '--stdin-filename',
     File.basename(ENV['TM_FILEPATH']),
   ]
 
@@ -64,55 +65,62 @@ def validate
 
   # Run eslint, get output
   Open3.popen3(eslint, *args) do |i,o,e,t|
-    i.puts ARGF.read
-    i.close_write
+    begin
+      # Timeout after two seconds
+      complete_results = Timeout.timeout(2) do
+        # i.puts ARGF.read
+        # i.close_write
 
-    exit_status = Integer(t.value.exitstatus)
-    results = begin JSON.parse(o.read) rescue nil end
+        results = begin JSON.parse(o.read) rescue nil end
 
-    unless results
-      puts "Error running eslint"
-      puts "#{e.read}"
+        unless results
+          puts "Error running eslint"
+          puts "#{e.read}"
+          exit 206
+        end
+
+        result = results.first
+
+        if result['messages'].length === 0
+          puts NO_LINT
+          reset_marks([], 'error')
+          reset_marks([], 'warning')
+          exit 206
+        end
+
+        error_lines = []
+        warning_lines = []
+        msg_count = result['messages'].length
+        s = msg_count == 1 ? '' : 's'
+
+        puts "#{msg_count} lint message#{s}! #{YES_LINT}"
+
+        result['messages'].each do |msg|
+          if msg['line'] && msg['column']
+            print "Line #{msg['line']}, column #{msg['column']}: "
+          end
+
+          if msg['severity'] === 2
+            print 'Error! '
+            error_lines << "#{msg['line']}:#{msg['column']}"
+          else
+            print 'Warning! '
+            warning_lines << "#{msg['line']}:#{msg['column']}"
+          end
+
+          puts msg['message']
+        end
+
+        reset_marks(error_lines, 'error')
+        reset_marks(warning_lines, 'warning')
+
+        exit 206
+      end
+    rescue Timeout::Error
+      Process.kill("KILL", t.pid)
+      puts 'ESLint timed out!'
       exit 206
     end
-
-    result = results.first
-
-    if result['messages'].length === 0
-      puts NO_LINT
-      reset_marks([], 'error')
-      reset_marks([], 'warning')
-      exit 206
-    end
-
-    error_lines = []
-    warning_lines = []
-    msg_count = result['messages'].length
-    s = msg_count == 1 ? '' : 's'
-
-    puts "#{msg_count} lint message#{s}! #{YES_LINT}"
-
-    result['messages'].each do |msg|
-      if msg['line'] && msg['column']
-        print "Line #{msg['line']}, column #{msg['column']}: "
-      end
-
-      if msg['severity'] === 2
-        print 'Error! '
-        error_lines << "#{msg['line']}:#{msg['column']}"
-      else
-        print 'Warning! '
-        warning_lines << "#{msg['line']}:#{msg['column']}"
-      end
-
-      puts msg['message']
-    end
-
-    reset_marks(error_lines, 'error')
-    reset_marks(warning_lines, 'warning')
-
-    exit 206
-
   end
 end
 
