@@ -90,10 +90,19 @@ def validate
 
         error_lines = []
         warning_lines = []
-        msg_count = result['messages'].length
+        msg_count = result['errorCount'] + result['warningCount']
         s = msg_count == 1 ? '' : 's'
 
-        puts "#{msg_count} lint message#{s}! #{YES_LINT}"
+        title = []
+        if result['errorCount'] > 0
+          title.push "#{result['errorCount']} error#{result['errorCount'] === 1 ? '' : 's'}"
+        end
+
+        if result['warningCount'] > 0
+          title.push "#{result['warningCount']} warning#{result['warningCount'] === 1 ? '' : 's'}"
+        end
+
+        puts "#{title.join(' and ')}! #{YES_LINT}"
 
         result['messages'].each do |msg|
           if msg['line'] && msg['column']
