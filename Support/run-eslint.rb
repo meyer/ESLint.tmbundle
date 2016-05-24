@@ -71,7 +71,8 @@ def validate
         # i.puts ARGF.read
         # i.close_write
 
-        results = begin JSON.parse(o.read) rescue nil end
+        jsonOutput = o.read
+        results = begin JSON.parse(jsonOutput) rescue nil end
 
         unless results
           puts "Error running eslint"
@@ -79,8 +80,12 @@ def validate
           exit 206
         end
 
-        result = results.first
+        if results.length === 0
+          puts "ESLint returned an empty array"
+          exit 206
+        end
 
+        result = results.first
         if result['messages'].length === 0
           puts NO_LINT
           reset_marks([], 'error')
