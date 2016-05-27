@@ -93,6 +93,12 @@ def validate
           exit 206
         end
 
+        # TODO: better way to detect non-JS warnings (file ignored, etc.)
+        if result['messages'][0]['fatal'] === false
+          puts result['messages'][0]['message']
+          exit 206
+        end
+
         error_lines = []
         warning_lines = []
         msg_count = result['errorCount'] + result['warningCount']
@@ -117,9 +123,10 @@ def validate
           if msg['severity'] === 2
             print 'Error! '
             error_lines << "#{msg['line']}:#{msg['column']}"
-          else
+          elsif msg['severity'] === 1
             print 'Warning! '
             warning_lines << "#{msg['line']}:#{msg['column']}"
+          else
           end
 
           puts msg['message']
