@@ -51,8 +51,7 @@ def validate
     '-f',
     'json',
     '--no-color',
-    # '--stdin',
-    # '--stdin-filename',
+    '--no-ignore',
     File.basename(ENV['TM_FILEPATH']),
   ]
 
