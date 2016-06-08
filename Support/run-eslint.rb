@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require 'shellwords'
 require 'open3'
 require 'json'
@@ -15,10 +16,12 @@ require 'timeout'
 
 # yoinked from scm-diff-bundle: https://git.io/vzVux
 def reset_marks(lines, mark)
-  args = [ "--clear-mark=#{mark}" ]
+  return if __FILE__ == $PROGRAM_NAME
+
+  args = ["--clear-mark=#{mark}"]
   unless lines.empty?
     args << "--set-mark=#{mark}"
-    lines.each { |n| args << "--line=#{n}" }
+    lines.each {|n| args << "--line=#{n}"}
   end
   args << ENV['TM_FILEPATH']
 
@@ -38,21 +41,21 @@ end.sample
 
 YES_LINT = [
   "I\u0027m impressed.",
-  "Here they are (drumroll please\u2026)"
+  "Here they are (drumroll please\u2026)",
 ].sample
 
-def validate
+def validate(filename)
   eslint = ENV['TM_ESLINT'] || 'eslint'
 
   # Change to file directory so ESLint looks for the local .eslintrc
-  Dir.chdir File.dirname(ENV['TM_FILEPATH'])
+  Dir.chdir File.dirname(filename)
 
   args = [
     '-f',
     'json',
     '--no-color',
     '--no-ignore',
-    File.basename(ENV['TM_FILEPATH']),
+    File.basename(filename),
   ]
 
   ENV['PATH'] = ENV['PATH'].split(':').unshift('/usr/local/bin', '/usr/bin', '/bin').uniq.join(':')
@@ -67,9 +70,6 @@ def validate
     begin
       # Timeout after two seconds
       complete_results = Timeout.timeout(2) do
-        # i.puts ARGF.read
-        # i.close_write
-
         jsonOutput = o.read
         results = begin JSON.parse(jsonOutput) rescue nil end
 
@@ -155,4 +155,11 @@ def validate
   end
 end
 
-# validate if __FILE__ == $PROGRAM_NAME
+if __FILE__ == $PROGRAM_NAME
+  if ARGV.length != 1
+    abort "Usage: ./run-eslint.rb [path to JS file]"
+  end
+  validate ARGV[0]
+else
+  validate ENV['TM_FILEPATH']
+end
