@@ -86,7 +86,12 @@ def validate(filename)
 
         result = results.first
         if result['messages'].length === 0
-          puts NO_LINT
+          print [
+            # "\u{2728}\u{fe0f}", # sparkles
+            "\u{1f389}\u{fe0f}", # party popper
+            "\u{1f60e}\u{fe0f}", # sunglasses
+          ].sample
+          puts " #{NO_LINT}"
           reset_marks([], 'error')
           reset_marks([], 'warning')
           exit 206
