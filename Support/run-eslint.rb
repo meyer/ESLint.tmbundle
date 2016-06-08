@@ -114,21 +114,32 @@ def validate
 
         puts "#{title.join(' and ')}! #{YES_LINT}"
 
-        result['messages'].each do |msg|
-          if msg['line'] && msg['column']
-            print "Line #{msg['line']}, column #{msg['column']}: "
-          end
+        results_by_message = {}
 
+        result['messages'].each do |msg|
           if msg['severity'] === 2
-            print 'Error! '
+            msg['emoji'] = "\u{1f6ab}\u{fe0f}"
             error_lines << "#{msg['line']}:#{msg['column']}"
           elsif msg['severity'] === 1
-            print 'Warning! '
+            msg['emoji'] = "\u{26a0}\u{fe0f}"
             warning_lines << "#{msg['line']}:#{msg['column']}"
           else
           end
 
-          puts msg['message']
+          results_by_message[msg['message']] ||= []
+          results_by_message[msg['message']] << msg
+        end
+
+        results_by_message.each do |k,v|
+          print v[0]['emoji'] + ' '
+          if v.length == 1
+            print "#{v[0]['line']}:#{v[0]['column']}: "
+          else
+            print v.map {|d| "#{d['line']}:#{d['column']}"}.join(", ")
+            puts ":"
+            print "    "
+          end
+          puts k
         end
 
         reset_marks(error_lines, 'error')
