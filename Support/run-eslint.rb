@@ -14,6 +14,8 @@ require 'timeout'
 # 206: show tooltip
 # 207: create new document
 
+class ESLintError < StandardError; end
+
 # yoinked from scm-diff-bundle: https://git.io/vzVux
 def reset_marks(lines, mark)
   return if __FILE__ == $PROGRAM_NAME
@@ -74,33 +76,30 @@ def validate(filename)
         results = begin JSON.parse(jsonOutput) rescue nil end
 
         unless results
-          puts "Error running eslint"
-          puts "#{e.read}"
-          exit 206
+          raise ESLintError, "Error running eslint\n#{e.read}"
         end
 
         if results.length === 0
-          puts "ESLint returned an empty array"
-          exit 206
+          raise ESLintError, 'ESLint returned an empty array'
         end
 
         result = results.first
         if result['messages'].length === 0
-          print [
+          reset_marks([], 'error')
+          reset_marks([], 'warning')
+
+          emoji = [
             # "\u{2728}\u{fe0f}", # sparkles
             "\u{1f389}\u{fe0f}", # party popper
             "\u{1f60e}\u{fe0f}", # sunglasses
           ].sample
-          puts " #{NO_LINT}"
-          reset_marks([], 'error')
-          reset_marks([], 'warning')
-          exit 206
+
+          raise ESLintError, "#{emoji} #{NO_LINT}"
         end
 
         # TODO: better way to detect non-JS warnings (file ignored, etc.)
         if result['messages'][0]['fatal'] === false
-          puts result['messages'][0]['message']
-          exit 206
+          raise ESLintError, result['messages'][0]['message']
         end
 
         error_lines = []
@@ -128,7 +127,6 @@ def validate(filename)
           elsif msg['severity'] === 1
             msg['emoji'] = "\u{26a0}\u{fe0f}"
             warning_lines << "#{msg['line']}:#{msg['column']}"
-          else
           end
 
           results_by_message[msg['message']] ||= []
@@ -149,12 +147,17 @@ def validate(filename)
 
         reset_marks(error_lines, 'error')
         reset_marks(warning_lines, 'warning')
-
-        exit 206
       end
-    rescue Timeout::Error
-      Process.kill("KILL", t.pid)
-      puts 'ESLint timed out!'
+    rescue Timeout::Error => e
+      puts 'Error: ESLint timed out!'
+    rescue ESLintError => e
+      puts e.message
+    ensure
+      begin
+        Process.kill('KILL', t.pid)
+      rescue Errno::ESRCH
+        # pid was already killed
+      end
       exit 206
     end
   end
