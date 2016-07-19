@@ -14,6 +14,9 @@ require 'timeout'
 # 206: show tooltip
 # 207: create new document
 
+MAX_ERROR_LINES = 20
+MAX_LINE_NUM_COUNT = 5
+
 class ESLintError < StandardError; end
 
 # yoinked from scm-diff-bundle: https://git.io/vzVux
@@ -133,16 +136,28 @@ def validate(filename)
           results_by_message[msg['message']] << msg
         end
 
-        results_by_message.each do |k,v|
+        displayedErrorCount = 0
+        results_by_message.each_with_index do |(k,v), idx|
+          displayedErrorCount += v.length
           print v[0]['emoji'] + ' '
           if v.length == 1
             print "#{v[0]['line']}:#{v[0]['column']}: "
+          elsif v.length > MAX_LINE_NUM_COUNT
+            print "#{v[0]['line']}:#{v[0]['column']}, "
+            print "#{v[1]['line']}:#{v[1]['column']}, "
+            print "and #{v.length - 2} other lines: "
           else
             print v.map {|d| "#{d['line']}:#{d['column']}"}.join(", ")
             puts ":"
             print "    "
           end
           puts k
+
+          if idx > MAX_ERROR_LINES
+            notShownCount = result['errorCount'] + result['warningCount'] - displayedErrorCount
+            puts "#{notShownCount} more error#{notShownCount > 1 ? 's' : ''} not shown."
+            break
+          end
         end
 
         reset_marks(error_lines, 'error')
