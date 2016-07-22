@@ -67,7 +67,7 @@ def validate(filename)
 
   if `which #{eslint}`.chomp === ''
     puts '`eslint` could not be found on your PATH'
-    exit 206
+    return
   end
 
   # Run eslint, get output
@@ -173,7 +173,6 @@ def validate(filename)
       rescue Errno::ESRCH
         # pid was already killed
       end
-      exit 206
     end
   end
 end
@@ -186,3 +185,5 @@ if __FILE__ == $PROGRAM_NAME
 else
   validate ENV['TM_FILEPATH']
 end
+
+exit 206
