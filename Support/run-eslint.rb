@@ -19,9 +19,36 @@ MAX_LINE_NUM_COUNT = 5
 
 class ESLintError < StandardError; end
 
+pathArray = ENV['PATH'].split(':').unshift(
+  '/usr/local/bin',
+  '/usr/bin',
+  '/bin'
+)
+
+if ENV['TM_FILEPATH']
+  Dir.chdir File.dirname(ENV['TM_FILEPATH'])
+end
+
+# generate array of potential node_modules/.bin folders
+module_dirs = Dir.pwd.split('/')
+  .inject([]) {|m,o| m.push([m.last, o].compact.join('/'))}
+  .reverse
+  .map {|e| e + '/node_modules/.bin'}
+  # .reject {|f| !File.directory? f}
+
+ENV['PATH'] = module_dirs.join(':') + ':' + ENV['PATH']
+
+ESLINT_BIN = `which eslint`.chomp
+
+if ESLINT_BIN == ''
+  puts 'eslint could not be found in the following directories:'
+  puts ENV['PATH'].split(':').map {|p| "- #{p}"}.join("\n")
+  exit 206
+end
+
 # yoinked from scm-diff-bundle: https://git.io/vzVux
 def reset_marks(lines, mark)
-  return if __FILE__ == $PROGRAM_NAME
+  return unless ENV['TM_MATE'] && ENV['TM_FILEPATH']
 
   args = ["--clear-mark=#{mark}"]
   unless lines.empty?
@@ -50,8 +77,6 @@ YES_LINT = [
 ].sample
 
 def validate(filename)
-  eslint = ENV['TM_ESLINT'] || 'eslint'
-
   # Change to file directory so ESLint looks for the local .eslintrc
   Dir.chdir File.dirname(filename)
 
@@ -63,15 +88,8 @@ def validate(filename)
     File.basename(filename),
   ]
 
-  ENV['PATH'] = ENV['PATH'].split(':').unshift('/usr/local/bin', '/usr/bin', '/bin').uniq.join(':')
-
-  if `which #{eslint}`.chomp === ''
-    puts '`eslint` could not be found on your PATH'
-    return
-  end
-
   # Run eslint, get output
-  Open3.popen3(eslint, *args) do |i,o,e,t|
+  Open3.popen3(ESLINT_BIN, *args) do |i,o,e,t|
     begin
       # Timeout after two seconds
       complete_results = Timeout.timeout(2) do
